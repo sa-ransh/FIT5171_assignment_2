@@ -111,5 +111,4 @@ public class RocketUnitTest {
         assertFalse(bfr.equals(anotherRocket));
     }
 
-
 }
