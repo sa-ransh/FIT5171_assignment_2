@@ -1,6 +1,7 @@
 package rockets.model;
 
 import java.util.Objects;
+import java.util.regex.*;
 
 import static org.apache.commons.lang3.Validate.notBlank;
 
@@ -18,7 +19,8 @@ public class User extends Entity {
     }
 
     public void setFirstName(String firstName) {
-        this.firstName = firstName;
+        if(firstName.matches("[a-zA-Z]+"))
+            this.firstName = firstName;
     }
 
     public String getLastName() {
@@ -26,7 +28,9 @@ public class User extends Entity {
     }
 
     public void setLastName(String lastName) {
-        this.lastName = lastName;
+        notBlank(lastName, "lastName cannot be null or empty");
+        if(lastName.matches("[a-zA-Z]+"))
+            this.lastName = lastName;
     }
 
     public String getEmail() {
@@ -35,7 +39,11 @@ public class User extends Entity {
 
     public void setEmail(String email) {
         notBlank(email, "email cannot be null or empty");
-        this.email = email;
+        boolean test = isValidEmailAddress(email);
+        if(test == true)
+            this.email = email;
+        else
+            return;
     }
 
     public String getPassword() {
@@ -43,8 +51,12 @@ public class User extends Entity {
     }
 
     public void setPassword(String password) {
-        notBlank(password, "password cannot be null or empty");
-        this.password = password;
+        notBlank(password,"password cannot be null or empty");
+        boolean validPassword = isValidPassword(password);
+        if(validPassword == true)
+            this.password = password;
+        else
+            return;
     }
 
     // match the given password against user's password and return the result
@@ -73,4 +85,17 @@ public class User extends Entity {
                 ", email='" + email + '\'' +
                 '}';
     }
+
+    public static boolean isValidEmailAddress(String email)
+    {
+        Pattern p = Pattern.compile("^([\\w-\\.]+){1,64}@([\\w&&[^_]]+){2,255}.[a-z]{2,}$");
+        Matcher m = p.matcher(email);
+        return m.find();
+    }
+
+    public static boolean isValidPassword(String password)
+    {
+        return password.matches("(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#$%&*()_+=|<>?{}\\[\\]~-]).{8,}");
+    }
 }
+
