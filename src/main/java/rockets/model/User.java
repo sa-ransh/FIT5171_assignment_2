@@ -43,6 +43,7 @@ public class User extends Entity {
     }
 
     public void setPassword(String password) {
+        notBlank(password, "password cannot be null or empty");
         this.password = password;
     }
 

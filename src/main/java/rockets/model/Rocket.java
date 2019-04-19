@@ -1,7 +1,9 @@
 package rockets.model;
 
+
 import java.util.Objects;
 
+import static org.apache.commons.lang3.Validate.notBlank;
 import static org.apache.commons.lang3.Validate.notNull;
 
 public class Rocket extends Entity {
@@ -47,6 +49,7 @@ public class Rocket extends Entity {
     }
 
     public String getMassToLEO() {
+
         return massToLEO;
     }
 
@@ -59,14 +62,17 @@ public class Rocket extends Entity {
     }
 
     public void setMassToLEO(String massToLEO) {
+        notBlank(massToLEO, "massToLEO cannot be null or empty");
         this.massToLEO = massToLEO;
     }
 
     public void setMassToGTO(String massToGTO) {
+        notBlank(massToGTO, "massToGTO cannot be null or empty");
         this.massToGTO = massToGTO;
     }
 
     public void setMassToOther(String massToOther) {
+        notBlank(massToOther, "massToOther cannot be null or empty");
         this.massToOther = massToOther;
     }
 

@@ -1,62 +1,78 @@
 package rockets.model;
 
+import com.google.common.collect.Sets;
+import java.time.Year;
+import java.util.Objects;
+import java.util.Set;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.provider.ValueSource;
+import static org.apache.commons.lang3.Validate.notBlank;
+import static org.apache.commons.lang3.Validate.notNull;
 
-import static org.junit.jupiter.api.Assertions.*;
+public class LaunchServiceProvider extends Entity {
+    private String name;
 
-public class RocketUnitTest {
+    private int yearFounded;
 
-    @BeforeEach
-    public void setUp() {
+    private String country;
+
+    private String headquarters;
+
+    private Set<Rocket> rockets;
+
+    public LaunchServiceProvider(String name, int yearFounded, String country) {
+        this.name = name;
+        this.yearFounded = yearFounded;
+        this.country = country;
+
+        rockets = Sets.newLinkedHashSet();
     }
 
-    @AfterEach
-    public void tearDown() {
+    public String getName() {
+        return name;
     }
 
-    @DisplayName("should create rocket successfully when given right parameters to constructor")
-    @Test
-    public void shouldConstructRocketObject() {
-        String name = "BFR";
-        String country = "USA";
-        LaunchServiceProvider manufacturer = new LaunchServiceProvider("SpaceX", 2002, "USA");
-        Rocket bfr = new Rocket(name, country, manufacturer);
-        assertNotNull(bfr);
+    public int getYearFounded() {
+        return yearFounded;
     }
 
-    @DisplayName("should throw exception when given null manufacturer to constructor")
-    @Test
-    public void shouldThrowExceptionWhenNoManufacturerGiven() {
-        String name = "BFR";
-        String country = "USA";
-        assertThrows(NullPointerException.class, () -> new Rocket(name, country, null));
+    public String getCountry() {
+        return country;
     }
 
-    @DisplayName("should set rocket massToLEO value")
-    @ValueSource(strings = {"10000", "15000"})
-    public void shouldSetMassToLEOWhenGivenCorrectValue(String massToLEO) {
-        String name = "BFR";
-        String country = "USA";
-        LaunchServiceProvider manufacturer = new LaunchServiceProvider("SpaceX", 2002, "USA");
-
-        Rocket bfr = new Rocket(name, country, manufacturer);
-
-        bfr.setMassToLEO(massToLEO);
-        assertEquals(massToLEO, bfr.getMassToLEO());
+    public String getHeadquarters() {
+        return headquarters;
     }
 
-    @DisplayName("should throw exception when set massToLEO to null")
-    @Test
-    public void shouldThrowExceptionWhenSetMassToLEOToNull() {
-        String name = "BFR";
-        String country = "USA";
-        LaunchServiceProvider manufacturer = new LaunchServiceProvider("SpaceX", 2002, "USA");
-        Rocket bfr = new Rocket(name, country, manufacturer);
-        assertThrows(NullPointerException.class, () -> bfr.setMassToLEO(null));
+    public Set<Rocket> getRockets() {
+        return rockets;
+    }
+
+    public void setHeadquarters(String headquarters) {
+        notBlank(headquarters, "headquarters cannot be null or empty");
+        this.headquarters = headquarters;
+    }
+
+    public void setRockets(Set<Rocket> rockets) {
+        this.rockets = rockets;
+    }
+
+    public boolean checkValidYear(Integer year){
+        return Year.now().getValue() > year;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LaunchServiceProvider that = (LaunchServiceProvider) o;
+        return yearFounded == that.yearFounded &&
+                Objects.equals(name, that.name) &&
+                Objects.equals(country, that.country);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(name, yearFounded, country);
     }
 }

@@ -1,9 +1,12 @@
 package rockets.model;
 
 import com.google.common.collect.Sets;
-
+import java.time.Year;
 import java.util.Objects;
 import java.util.Set;
+
+import static org.apache.commons.lang3.Validate.notBlank;
+import static org.apache.commons.lang3.Validate.notNull;
 
 public class LaunchServiceProvider extends Entity {
     private String name;
@@ -45,11 +48,16 @@ public class LaunchServiceProvider extends Entity {
     }
 
     public void setHeadquarters(String headquarters) {
+        notBlank(headquarters, "headquarters cannot be null or empty");
         this.headquarters = headquarters;
     }
 
     public void setRockets(Set<Rocket> rockets) {
         this.rockets = rockets;
+    }
+
+    public boolean checkValidYear(Integer year){
+        return Year.now().getValue() > year;
     }
 
     @Override
