@@ -20,6 +20,10 @@ public class LaunchServiceProvider extends Entity {
     private Set<Rocket> rockets;
 
     public LaunchServiceProvider(String name, int yearFounded, String country) {
+        notNull(name);
+        notNull(yearFounded);
+        notNull(country);
+
         this.name = name;
         this.yearFounded = yearFounded;
         this.country = country;
