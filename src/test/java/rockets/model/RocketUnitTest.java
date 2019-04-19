@@ -83,6 +83,33 @@ public class RocketUnitTest {
 
     }
 
+    @DisplayName("should return true when two rockets have the same details")
+    @Test
+    public void shouldReturnTrueWhenUsersHaveSameDetails() {
+        String name = "BFR";
+        String country = "USA";
+        LaunchServiceProvider manufacturer = new LaunchServiceProvider("SpaceX", 2002, "USA");
+        Rocket bfr = new Rocket(name, country, manufacturer);
+        String name2 = "BFR";
+        String country2 = "USA";
+        LaunchServiceProvider manufacturer2 = new LaunchServiceProvider("SpaceX", 2002, "USA");
+        Rocket anotherRocket = new Rocket(name2, country2, manufacturer2);
+        assertTrue(bfr.equals(anotherRocket));
+    }
+
+    @DisplayName("should return false when two rockets have the different details")
+    @Test
+    public void shouldReturnTrueWhenUsersHaveDifferentDetails() {
+        String name = "BFR";
+        String country = "USA";
+        LaunchServiceProvider manufacturer = new LaunchServiceProvider("SpaceX", 2002, "USA");
+        Rocket bfr = new Rocket(name, country, manufacturer);
+        String name2 = "Apollo";
+        String country2 = "USA";
+        LaunchServiceProvider manufacturer2 = new LaunchServiceProvider("SpaceY", 2002, "USA");
+        Rocket anotherRocket = new Rocket(name2, country2, manufacturer2);
+        assertFalse(bfr.equals(anotherRocket));
+    }
 
 
 }
