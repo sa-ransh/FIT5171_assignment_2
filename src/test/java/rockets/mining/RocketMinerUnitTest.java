@@ -122,4 +122,30 @@ public class RocketMinerUnitTest {
         assertEquals(k, loadedRockets.size());
         assertEquals(sortedRockets.subList(0, k), loadedRockets);
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"LEO"})
+    public void shouldReturnDominantCountry(String k) {
+        when(dao.loadAll(Launch.class)).thenReturn(launches);
+        List<Launch> sortedLaunches = new ArrayList<>(launches);
+        Map<String,Integer> countrymap = new HashMap<>();
+        for(int i=0;i<sortedLaunches.size();i++)
+        {
+            if(sortedLaunches.get(i).getOrbit().equals(k))
+            {
+                if(countrymap.containsKey(sortedLaunches.get(i).getLaunchVehicle().getManufacturer().getCountry()))
+                {
+                    int val = countrymap.get(sortedLaunches.get(i).getLaunchVehicle().getManufacturer().getCountry());
+                    countrymap.put(sortedLaunches.get(i).getLaunchVehicle().getManufacturer().getCountry(),val+1);
+                }
+                else
+                {
+                    countrymap.put(sortedLaunches.get(i).getLaunchVehicle().getManufacturer().getCountry(),1);
+                }
+            }
+        }
+        String domcountry = countrymap.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getKey();
+        String country = miner.dominantCountry(k);
+        assertEquals(domcountry,country);
+    }
 }

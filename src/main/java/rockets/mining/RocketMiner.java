@@ -34,7 +34,6 @@ public class RocketMiner {
 
     public List<Rocket> mostLaunchedRockets(int k) {
         Collection<Launch> launchesa = dao.loadAll(Launch.class);
-        logger.info(launchesa.stream().findFirst().get().getLaunchVehicle().getName());
         ArrayList<Rocket> rockets = new ArrayList<>();
         for(int i = 0;i<launchesa.size();i++)
         {
@@ -103,7 +102,31 @@ public class RocketMiner {
      * @param orbit the orbit
      * @return the country who sends the most payload to the orbit
      */
-    public String dominantCountry(String orbit) { return null;}
+    public String dominantCountry(String orbit) {
+        Collection<Launch> launches = dao.loadAll(Launch.class);
+        ArrayList<LaunchServiceProvider> lsp = new ArrayList<>();
+        Map<String,Integer> countrymap = new HashMap<>();
+        //logger.info(orbit);
+        for(int i=0;i<launches.size();i++)
+        {
+            //logger.info(Boolean.toString(Iterables.get(launches,i).getOrbit().equals(orbit)));
+            if(Iterables.get(launches,i).getOrbit().equals(orbit))
+            {
+                //logger.info(Iterables.get(launches,i).getLaunchVehicle().getManufacturer().getCountry());
+                if (countrymap.containsKey(Iterables.get(launches,i).getLaunchVehicle().getManufacturer().getCountry()))
+                {
+                    int val = countrymap.get(Iterables.get(launches,i).getLaunchVehicle().getManufacturer().getCountry());
+                    countrymap.put(Iterables.get(launches,i).getLaunchVehicle().getManufacturer().getCountry(),val+1);
+                }
+                else
+                {
+                    countrymap.put(Iterables.get(launches,i).getLaunchVehicle().getManufacturer().getCountry(),1);
+                }
+            }
+        }
+        String returnval = countrymap.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getKey();
+        return returnval;
+    }
 
     /**
      * TODO: to be implemented & tested!
