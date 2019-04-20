@@ -1,5 +1,6 @@
 package rockets.mining;
 
+import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rockets.dataaccess.DAO;
@@ -8,10 +9,18 @@ import rockets.model.LaunchServiceProvider;
 import rockets.model.Rocket;
 
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import static java.util.stream.Collectors.*;
+import static java.util.Map.Entry.*;
+
 
 public class RocketMiner {
     private static Logger logger = LoggerFactory.getLogger(RocketMiner.class);
@@ -22,15 +31,41 @@ public class RocketMiner {
         this.dao = dao;
     }
 
-    /**
-     * TODO: to be implemented & tested!
-     * Returns the top-k most active rockets, as measured by number of completed launches.
-     *
-     * @param k the number of rockets to be returned.
-     * @return the list of k most active rockets.
-     */
+
     public List<Rocket> mostLaunchedRockets(int k) {
-        return null;
+        Collection<Launch> launchesa = dao.loadAll(Launch.class);
+        logger.info(launchesa.stream().findFirst().get().getLaunchVehicle().getName());
+        ArrayList<Rocket> rockets = new ArrayList<>();
+        for(int i = 0;i<launchesa.size();i++)
+        {
+            rockets.add(Iterables.get(launchesa,i).getLaunchVehicle());
+        }
+        Map<Rocket,Integer> rocketnum = new HashMap<>();
+        for(int i=0;i<rockets.size();i++)
+        {
+            if(rocketnum.containsKey(rockets.get(i)))
+            {
+                int num = rocketnum.get(rockets.get(i));
+                rocketnum.put(rockets.get(i),num+1);
+            }
+            else
+            {
+                rocketnum.put(rockets.get(i),1);
+            }
+        }
+        Map<Rocket, Integer> sorted = rocketnum
+                .entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(
+                        toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
+                                LinkedHashMap::new));
+        ArrayList<Rocket> returnval = new ArrayList<>();
+        for(Rocket i:sorted.keySet())
+        {
+            returnval.add(i);
+        }
+        return returnval.subList(0,k);
     }
 
     /**
@@ -54,7 +89,7 @@ public class RocketMiner {
      * @return the list of k most recent launches.
      */
     public List<Launch> mostRecentLaunches(int k) {
-        logger.info("find most recent " + k + " launches");
+        //logger.info("find most recent " + k + " launches");
         Collection<Launch> launches = dao.loadAll(Launch.class);
         Comparator<Launch> launchDateComparator = (a, b) -> -a.getLaunchDate().compareTo(b.getLaunchDate());
         return launches.stream().sorted(launchDateComparator).limit(k).collect(Collectors.toList());
