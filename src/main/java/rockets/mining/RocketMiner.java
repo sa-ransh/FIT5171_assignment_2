@@ -94,14 +94,7 @@ public class RocketMiner {
         return launches.stream().sorted(launchDateComparator).limit(k).collect(Collectors.toList());
     }
 
-    /**
-     * TODO: to be implemented & tested!
-     * <p>
-     * Returns the dominant country who has the most launched rockets in an orbit.
-     *
-     * @param orbit the orbit
-     * @return the country who sends the most payload to the orbit
-     */
+
     public String dominantCountry(String orbit) {
         Collection<Launch> launches = dao.loadAll(Launch.class);
         ArrayList<LaunchServiceProvider> lsp = new ArrayList<>();
@@ -128,16 +121,11 @@ public class RocketMiner {
         return returnval;
     }
 
-    /**
-     * TODO: to be implemented & tested!
-     * <p>
-     * Returns the top-k most expensive launches.
-     *
-     * @param k the number of launches to be returned.
-     * @return the list of k most expensive launches.
-     */
+
     public List<Launch> mostExpensiveLaunches(int k) {
-        return null;
+        Collection<Launch> launches = dao.loadAll(Launch.class);
+        Comparator<Launch> priceComparator = (a, b) -> -a.getPrice().compareTo(b.getPrice());
+        return launches.stream().sorted(priceComparator).limit(k).collect(Collectors.toList());
     }
 
     /**

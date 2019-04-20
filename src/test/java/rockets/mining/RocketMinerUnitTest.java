@@ -11,6 +11,9 @@ import rockets.dataaccess.neo4j.Neo4jDAO;
 import rockets.model.Launch;
 import rockets.model.LaunchServiceProvider;
 import rockets.model.Rocket;
+import scala.Array;
+
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -62,6 +65,8 @@ public class RocketMinerUnitTest {
         // index of rocket of each launch
         int[] rocketIndex = new int[]{0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 5, 5, 5};
 
+        BigDecimal[] price = new BigDecimal[]{BigDecimal.valueOf(100), BigDecimal.valueOf(300), BigDecimal.valueOf(400), BigDecimal.valueOf(500), BigDecimal.valueOf(100), BigDecimal.valueOf(600), BigDecimal.valueOf(700), BigDecimal.valueOf(900), BigDecimal.valueOf(1000), BigDecimal.valueOf(1100), BigDecimal.valueOf(1200), BigDecimal.valueOf(100), BigDecimal.valueOf(1100)};
+
         // 10 launches
         launches = IntStream.range(0, 13).mapToObj(i -> {
             //logger.info("create " + i + " launch in month: " + months[i]);
@@ -70,6 +75,7 @@ public class RocketMinerUnitTest {
             l.setLaunchVehicle(rockets.get(rocketIndex[i]));
             l.setLaunchSite("VAFB");
             l.setOrbit("LEO");
+            l.setPrice(price[i]);
             spy(l);
             return l;
         }).collect(Collectors.toList());
@@ -147,5 +153,19 @@ public class RocketMinerUnitTest {
         String domcountry = countrymap.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getKey();
         String country = miner.dominantCountry(k);
         assertEquals(domcountry,country);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 3})
+    public void shouldReturnMostExpensiveLaunches(int k) {
+        when(dao.loadAll(Launch.class)).thenReturn(launches);
+        List<Launch> sortedLaunches = new ArrayList<>(launches);
+        sortedLaunches.sort((a, b) -> -a.getPrice().compareTo(b.getPrice()));
+        List<Launch> loadedLaunches = miner.mostExpensiveLaunches(k);
+        /*for(int i =0;i<loadedLaunches.size();i++) {
+            logger.info(String.valueOf(loadedLaunches.get(i).getPrice()));
+        }*/
+        assertEquals(k, loadedLaunches.size());
+        assertEquals(sortedLaunches.subList(0, k), loadedLaunches);
     }
 }
