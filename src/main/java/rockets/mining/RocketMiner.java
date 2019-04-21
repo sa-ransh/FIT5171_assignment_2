@@ -31,6 +31,12 @@ public class RocketMiner {
         this.dao = dao;
     }
 
+    /**
+     * Returns the top-k most active rockets, as measured by number of completed launches.
+     *
+     * @param k the number of rockets to be returned.
+     * @return the list of k most active rockets.
+     */
 
     public List<Rocket> mostLaunchedRockets(int k) {
         Collection<Launch> launchesa = dao.loadAll(Launch.class);
@@ -94,6 +100,13 @@ public class RocketMiner {
         return launches.stream().sorted(launchDateComparator).limit(k).collect(Collectors.toList());
     }
 
+    /**
+     * <p>
+     * Returns the dominant country who has the most launched rockets in an orbit.
+     *
+             * @param orbit the orbit
+     * @return the country who sends the most payload to the orbit
+     */
 
     public String dominantCountry(String orbit) {
         Collection<Launch> launches = dao.loadAll(Launch.class);
@@ -121,6 +134,13 @@ public class RocketMiner {
         return returnval;
     }
 
+    /**
+     * <p>
+     * Returns the top-k most expensive launches.
+     *
+     * @param k the number of launches to be returned.
+     * @return the list of k most expensive launches.
+     */
 
     public List<Launch> mostExpensiveLaunches(int k) {
         Collection<Launch> launches = dao.loadAll(Launch.class);
