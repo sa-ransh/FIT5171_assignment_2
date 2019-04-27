@@ -21,8 +21,6 @@ import static java.util.stream.Collectors.*;
 
 
 public class RocketMiner {
-    private static Logger logger = LoggerFactory.getLogger(RocketMiner.class);
-
     private DAO dao;
 
     public RocketMiner(DAO dao) {
@@ -98,28 +96,16 @@ public class RocketMiner {
                     successLaunches.put(temp.getLaunchServiceProvider(),1);
                 }
 
-                if(totalLaunches.containsKey(temp.getLaunchServiceProvider()))
-                {
-                    int temp1 = totalLaunches.get(temp.getLaunchServiceProvider());
-                    totalLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
-                }
-                else
-                {
-                    totalLaunches.put(temp.getLaunchServiceProvider(),1);
-                }
+            }
+            if(totalLaunches.containsKey(temp.getLaunchServiceProvider()))
+            {
+                int temp1 = totalLaunches.get(temp.getLaunchServiceProvider());
+                totalLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
             }
             else
-            {
-                if(totalLaunches.containsKey(temp.getLaunchServiceProvider()))
-                {
-                    int temp1 = totalLaunches.get(temp.getLaunchServiceProvider());
-                    totalLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
-                }
-                else
-                {
-                    totalLaunches.put(temp.getLaunchServiceProvider(),1);
-                }
-            }
+             {
+                 totalLaunches.put(temp.getLaunchServiceProvider(),1);
+             }
         }
         Map<LaunchServiceProvider,Float> percentLaunches = new HashMap<>();
         for(LaunchServiceProvider ls:successLaunches.keySet())
@@ -135,6 +121,7 @@ public class RocketMiner {
                         toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
                                 LinkedHashMap::new));
         ArrayList<LaunchServiceProvider> returnval = new ArrayList<>();
+
         for(LaunchServiceProvider i:sorted.keySet())
         {
             returnval.add(i);
@@ -165,7 +152,6 @@ public class RocketMiner {
 
     public String dominantCountry(String orbit) {
         Collection<Launch> launches = dao.loadAll(Launch.class);
-        ArrayList<LaunchServiceProvider> lsp = new ArrayList<>();
         Map<String,Integer> countrymap = new HashMap<>();
         for(int i=0;i<launches.size();i++)
         {

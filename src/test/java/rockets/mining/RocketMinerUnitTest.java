@@ -191,44 +191,27 @@ public class RocketMinerUnitTest {
         for(int i=0;i<sortedLaunches.size();i++)
         {
             Launch temp = sortedLaunches.get(i);
-            switch (temp.getLaunchOutcome())
+            if(temp.getLaunchOutcome() == Launch.LaunchOutcome.SUCCESSFUL)
             {
-                case SUCCESSFUL:
+                if(successLaunches.containsKey(temp.getLaunchServiceProvider()))
                 {
-                    if(successLaunches.containsKey(temp.getLaunchServiceProvider()))
-                    {
-                        int temp1 = successLaunches.get(temp.getLaunchServiceProvider());
-                        successLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
-                    }
-                    else
-                    {
-                        successLaunches.put(temp.getLaunchServiceProvider(),1);
-                    }
+                    int temp1 = successLaunches.get(temp.getLaunchServiceProvider());
+                    successLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
+                }
+                else
+                {
+                    successLaunches.put(temp.getLaunchServiceProvider(),1);
+                }
 
-                    if(totalLaunches.containsKey(temp.getLaunchServiceProvider()))
-                    {
-                        int temp1 = totalLaunches.get(temp.getLaunchServiceProvider());
-                        totalLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
-                    }
-                    else
-                    {
-                        totalLaunches.put(temp.getLaunchServiceProvider(),1);
-                    }
-                    break;
-                }
-                case FAILED:
-                {
-                    if(totalLaunches.containsKey(temp.getLaunchServiceProvider()))
-                    {
-                        int temp1 = totalLaunches.get(temp.getLaunchServiceProvider());
-                        totalLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
-                    }
-                    else
-                    {
-                        totalLaunches.put(temp.getLaunchServiceProvider(),1);
-                    }
-                    break;
-                }
+            }
+            if(totalLaunches.containsKey(temp.getLaunchServiceProvider()))
+            {
+                int temp1 = totalLaunches.get(temp.getLaunchServiceProvider());
+                totalLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
+            }
+            else
+            {
+                totalLaunches.put(temp.getLaunchServiceProvider(),1);
             }
 
         }

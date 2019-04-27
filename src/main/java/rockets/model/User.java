@@ -40,10 +40,8 @@ public class User extends Entity {
     public void setEmail(String email) {
         notBlank(email, "email cannot be null or empty");
         boolean test = isValidEmailAddress(email);
-        if(test == true)
+        if(test)
             this.email = email;
-        else
-            return;
     }
 
     public String getPassword() {
@@ -53,10 +51,8 @@ public class User extends Entity {
     public void setPassword(String password) {
         notBlank(password,"password cannot be null or empty");
         boolean validPassword = isValidPassword(password);
-        if(validPassword == true)
+        if(validPassword)
             this.password = password;
-        else
-            return;
     }
 
     // match the given password against user's password and return the result
