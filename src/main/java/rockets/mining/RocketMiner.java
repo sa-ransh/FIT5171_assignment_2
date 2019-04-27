@@ -1,6 +1,7 @@
 package rockets.mining;
 
 import com.google.common.collect.Iterables;
+import org.omg.PortableInterceptor.SUCCESSFUL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rockets.dataaccess.DAO;
@@ -83,7 +84,39 @@ public class RocketMiner {
      * @return the list of k most reliable ones.
      */
     public List<LaunchServiceProvider> mostReliableLaunchServiceProviders(int k) {
-        return null;
+        Collection<Launch> launch = dao.loadAll(Launch.class);
+        ArrayList<LaunchServiceProvider> lsps = new ArrayList<>();
+        for(int i = 0;i<launch.size();i++)
+        {
+            lsps.add(Iterables.get(launch,i).getLaunchOutcome());
+        }
+        Map<LaunchServiceProvider,Launch.LaunchOutcome> lspstatus = new HashMap<>();
+        for(int i=0;i<lspstatus.size();i++)
+        {
+            if(lspstatus.containsKey("SUCCESSFUL"))
+            {
+//              Launch.LaunchOutcome count = lspstatus.get(lspstatus.get(i));
+                int count = lspstatus.get(lspstatus.get(i));
+                lspstatus.put(lspstatus.get(i),count+1);
+            }
+            else
+            {
+                lspstatus.put(lspstatus.get(i),1);
+            }
+        }
+        Map<LaunchServiceProvider, Integer> sorted = lspstatus
+                .entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(
+                        toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
+                                LinkedHashMap::new));
+        ArrayList<LaunchServiceProvider> returnval = new ArrayList<>();
+        for(LaunchServiceProvider i:sorted.keySet())
+        {
+            returnval.add(i);
+        }
+        return returnval.subList(0,k);
     }
 
     /**
