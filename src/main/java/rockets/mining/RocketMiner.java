@@ -1,8 +1,6 @@
 package rockets.mining;
 
 import com.google.common.collect.Iterables;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rockets.dataaccess.DAO;
 import rockets.model.Launch;
 import rockets.model.LaunchServiceProvider;
