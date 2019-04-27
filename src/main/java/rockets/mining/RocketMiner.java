@@ -165,7 +165,7 @@ public class RocketMiner {
     public List<Launch> mostRecentLaunches(int k) {
         //logger.info("find most recent " + k + " launches");
         Collection<Launch> launches = dao.loadAll(Launch.class);
-        Comparator<Launch> launchDateComparator = (a, b) -> -a.getLaunchDate().compareTo(b.getLaunchDate());
+        Comparator<Launch> launchDateComparator = Comparator.comparing(Launch::getLaunchDate).reversed();
         return launches.stream().sorted(launchDateComparator).limit(k).collect(Collectors.toList());
     }
 
@@ -199,7 +199,12 @@ public class RocketMiner {
                 }
             }
         }
-        String returnval = countrymap.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getKey();
+        Optional<Map.Entry<String,Integer>> tempvalue = countrymap.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1);
+        String returnval = "";
+        if(tempvalue.isPresent())
+        {
+            returnval = tempvalue.get().getKey();
+        }
         return returnval;
     }
 
@@ -213,7 +218,7 @@ public class RocketMiner {
 
     public List<Launch> mostExpensiveLaunches(int k) {
         Collection<Launch> launches = dao.loadAll(Launch.class);
-        Comparator<Launch> priceComparator = (a, b) -> -a.getPrice().compareTo(b.getPrice());
+        Comparator<Launch> priceComparator = Comparator.comparing(Launch::getPrice).reversed();
         return launches.stream().sorted(priceComparator).limit(k).collect(Collectors.toList());
     }
 

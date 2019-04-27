@@ -174,9 +174,9 @@ public class RocketMinerUnitTest {
         List<Launch> sortedLaunches = new ArrayList<>(launches);
         sortedLaunches.sort((a, b) -> -a.getPrice().compareTo(b.getPrice()));
         List<Launch> loadedLaunches = miner.mostExpensiveLaunches(k);
-        /*for(int i =0;i<loadedLaunches.size();i++) {
+        for(int i =0;i<loadedLaunches.size();i++) {
             logger.info(String.valueOf(loadedLaunches.get(i).getPrice()));
-        }*/
+        }
         assertEquals(k, loadedLaunches.size());
         assertEquals(sortedLaunches.subList(0, k), loadedLaunches);
     }
