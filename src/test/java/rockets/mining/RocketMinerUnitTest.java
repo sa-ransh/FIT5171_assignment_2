@@ -79,7 +79,6 @@ public class RocketMinerUnitTest {
         Launch.LaunchOutcome[] launchOutcomes = new Launch.LaunchOutcome[]{Launch.LaunchOutcome.SUCCESSFUL,Launch.LaunchOutcome.SUCCESSFUL, Launch.LaunchOutcome.SUCCESSFUL,Launch.LaunchOutcome.FAILED, Launch.LaunchOutcome.SUCCESSFUL,Launch.LaunchOutcome.FAILED, Launch.LaunchOutcome.SUCCESSFUL,Launch.LaunchOutcome.FAILED, Launch.LaunchOutcome.SUCCESSFUL,Launch.LaunchOutcome.FAILED, Launch.LaunchOutcome.FAILED,Launch.LaunchOutcome.FAILED, Launch.LaunchOutcome.SUCCESSFUL};
         // 10 launches
         launches = IntStream.range(0, 13).mapToObj(i -> {
-            //logger.info("create " + i + " launch in month: " + months[i]);
             Launch l = new Launch();
             l.setLaunchDate(LocalDate.of(2017, months[i], 1));
             l.setLaunchVehicle(rockets.get(rocketIndex[i]));

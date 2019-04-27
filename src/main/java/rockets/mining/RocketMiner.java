@@ -1,7 +1,6 @@
 package rockets.mining;
 
 import com.google.common.collect.Iterables;
-import org.omg.PortableInterceptor.SUCCESSFUL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rockets.dataaccess.DAO;
@@ -9,7 +8,6 @@ import rockets.model.Launch;
 import rockets.model.LaunchServiceProvider;
 import rockets.model.Rocket;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -20,7 +18,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static java.util.stream.Collectors.*;
-import static java.util.Map.Entry.*;
 
 
 public class RocketMiner {
@@ -88,48 +85,39 @@ public class RocketMiner {
         Map<LaunchServiceProvider,Integer> totalLaunches = new HashMap<>();
         for(int i = 0;i<launch.size();i++)
         {
-            //lsps.add(Iterables.get(launch,i).get)
             Launch temp = Iterables.get(launch,i);
-            switch(temp.getLaunchOutcome())
+            if(temp.getLaunchOutcome() == Launch.LaunchOutcome.SUCCESSFUL)
             {
-                case SUCCESSFUL:
+                if(successLaunches.containsKey(temp.getLaunchServiceProvider()))
                 {
-                    if(successLaunches.containsKey(temp.getLaunchServiceProvider()))
-                    {
-                        int temp1 = successLaunches.get(temp.getLaunchServiceProvider());
-                        successLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
-                        //logger.info(temp.getLaunchServiceProvider().getName()+" success  :"+temp1);
-                    }
-                    else
-                    {
-                        successLaunches.put(temp.getLaunchServiceProvider(),1);
-                    }
-
-                    if(totalLaunches.containsKey(temp.getLaunchServiceProvider()))
-                    {
-                        int temp1 = totalLaunches.get(temp.getLaunchServiceProvider());
-                        totalLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
-                        //logger.info(temp.getLaunchServiceProvider().getName()+"  total :"+temp1);
-                    }
-                    else
-                    {
-                        totalLaunches.put(temp.getLaunchServiceProvider(),1);
-                    }
-                    break;
+                    int temp1 = successLaunches.get(temp.getLaunchServiceProvider());
+                    successLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
                 }
-                case FAILED:
+                else
                 {
-                    if(totalLaunches.containsKey(temp.getLaunchServiceProvider()))
-                    {
-                        int temp1 = totalLaunches.get(temp.getLaunchServiceProvider());
-                        totalLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
-                        //logger.info(temp.getLaunchServiceProvider().getName()+"  failed :"+temp1);
-                    }
-                    else
-                    {
-                        totalLaunches.put(temp.getLaunchServiceProvider(),1);
-                    }
-                    break;
+                    successLaunches.put(temp.getLaunchServiceProvider(),1);
+                }
+
+                if(totalLaunches.containsKey(temp.getLaunchServiceProvider()))
+                {
+                    int temp1 = totalLaunches.get(temp.getLaunchServiceProvider());
+                    totalLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
+                }
+                else
+                {
+                    totalLaunches.put(temp.getLaunchServiceProvider(),1);
+                }
+            }
+            else
+            {
+                if(totalLaunches.containsKey(temp.getLaunchServiceProvider()))
+                {
+                    int temp1 = totalLaunches.get(temp.getLaunchServiceProvider());
+                    totalLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
+                }
+                else
+                {
+                    totalLaunches.put(temp.getLaunchServiceProvider(),1);
                 }
             }
         }
@@ -137,7 +125,6 @@ public class RocketMiner {
         for(LaunchServiceProvider ls:successLaunches.keySet())
         {
             Float percent = ((float)successLaunches.get(ls)/(float)totalLaunches.get(ls)) * 100;
-            //logger.info(ls.getName()+"   :"+percent);
             percentLaunches.put(ls,percent);
         }
         Map<LaunchServiceProvider, Float> sorted = percentLaunches
@@ -163,7 +150,6 @@ public class RocketMiner {
      * @return the list of k most recent launches.
      */
     public List<Launch> mostRecentLaunches(int k) {
-        //logger.info("find most recent " + k + " launches");
         Collection<Launch> launches = dao.loadAll(Launch.class);
         Comparator<Launch> launchDateComparator = Comparator.comparing(Launch::getLaunchDate).reversed();
         return launches.stream().sorted(launchDateComparator).limit(k).collect(Collectors.toList());
@@ -181,13 +167,10 @@ public class RocketMiner {
         Collection<Launch> launches = dao.loadAll(Launch.class);
         ArrayList<LaunchServiceProvider> lsp = new ArrayList<>();
         Map<String,Integer> countrymap = new HashMap<>();
-        //logger.info(orbit);
         for(int i=0;i<launches.size();i++)
         {
-            //logger.info(Boolean.toString(Iterables.get(launches,i).getOrbit().equals(orbit)));
             if(Iterables.get(launches,i).getOrbit().equals(orbit))
             {
-                //logger.info(Iterables.get(launches,i).getLaunchVehicle().getManufacturer().getCountry());
                 if (countrymap.containsKey(Iterables.get(launches,i).getLaunchVehicle().getManufacturer().getCountry()))
                 {
                     int val = countrymap.get(Iterables.get(launches,i).getLaunchVehicle().getManufacturer().getCountry());
