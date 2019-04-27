@@ -45,9 +45,19 @@ public class RocketMinerUnitTest {
 
         lsps = Arrays.asList(
                 new LaunchServiceProvider("ULA", 1990, "USA"),
+                new LaunchServiceProvider("ULA", 1990, "USA"),
+                new LaunchServiceProvider("ULA", 1990, "USA"),
+                new LaunchServiceProvider("ULA", 1990, "USA"),
                 new LaunchServiceProvider("SpaceX", 2002, "USA"),
+                new LaunchServiceProvider("SpaceX", 2002, "USA"),
+                new LaunchServiceProvider("SpaceX", 2002, "USA"),
+                new LaunchServiceProvider("SpaceX", 2002, "USA"),
+                new LaunchServiceProvider("ESA", 1975, "Europe "),
+                new LaunchServiceProvider("ESA", 1975, "Europe "),
+                new LaunchServiceProvider("ESA", 1975, "Europe "),
+                new LaunchServiceProvider("ESA", 1975, "Europe "),
                 new LaunchServiceProvider("ESA", 1975, "Europe ")
-        );
+);
 
         // index of lsp of each rocket
         int[] lspIndex = new int[]{0, 0, 0, 1, 1};
@@ -66,13 +76,15 @@ public class RocketMinerUnitTest {
         int[] rocketIndex = new int[]{0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 5, 5, 5};
 
         BigDecimal[] price = new BigDecimal[]{BigDecimal.valueOf(100), BigDecimal.valueOf(300), BigDecimal.valueOf(400), BigDecimal.valueOf(500), BigDecimal.valueOf(100), BigDecimal.valueOf(600), BigDecimal.valueOf(700), BigDecimal.valueOf(900), BigDecimal.valueOf(1000), BigDecimal.valueOf(1100), BigDecimal.valueOf(1200), BigDecimal.valueOf(100), BigDecimal.valueOf(1100)};
-
+        Launch.LaunchOutcome[] launchOutcomes = new Launch.LaunchOutcome[]{Launch.LaunchOutcome.SUCCESSFUL,Launch.LaunchOutcome.SUCCESSFUL, Launch.LaunchOutcome.SUCCESSFUL,Launch.LaunchOutcome.FAILED, Launch.LaunchOutcome.SUCCESSFUL,Launch.LaunchOutcome.FAILED, Launch.LaunchOutcome.SUCCESSFUL,Launch.LaunchOutcome.FAILED, Launch.LaunchOutcome.SUCCESSFUL,Launch.LaunchOutcome.FAILED, Launch.LaunchOutcome.FAILED,Launch.LaunchOutcome.FAILED, Launch.LaunchOutcome.SUCCESSFUL};
         // 10 launches
         launches = IntStream.range(0, 13).mapToObj(i -> {
             //logger.info("create " + i + " launch in month: " + months[i]);
             Launch l = new Launch();
             l.setLaunchDate(LocalDate.of(2017, months[i], 1));
             l.setLaunchVehicle(rockets.get(rocketIndex[i]));
+            l.setLaunchServiceProvider(lsps.get(i));
+            l.setLaunchOutcome(launchOutcomes[i]);
             l.setLaunchSite("VAFB");
             l.setOrbit("LEO");
             l.setPrice(price[i]);
@@ -170,12 +182,80 @@ public class RocketMinerUnitTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {1, 2, 3, 4, 5})
+    @ValueSource(ints = {1, 2, 3})
     public void shouldReturnMostReliableLaunchServiceProviders(int k){
         when(dao.loadAll(Launch.class)).thenReturn(launches);
         List<Launch> sortedLaunches = new ArrayList<>(launches);
         List<LaunchServiceProvider> launchServiceProviders = miner.mostReliableLaunchServiceProviders(k);
+        Map<LaunchServiceProvider,Integer> successLaunches= new HashMap<>();
+        Map<LaunchServiceProvider,Integer> totalLaunches= new HashMap<>();
+        for(int i=0;i<sortedLaunches.size();i++)
+        {
+            Launch temp = sortedLaunches.get(i);
+            switch (temp.getLaunchOutcome())
+            {
+                case SUCCESSFUL:
+                {
+                    if(successLaunches.containsKey(temp.getLaunchServiceProvider()))
+                    {
+                        int temp1 = successLaunches.get(temp.getLaunchServiceProvider());
+                        successLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
+                    }
+                    else
+                    {
+                        successLaunches.put(temp.getLaunchServiceProvider(),1);
+                    }
 
+                    if(totalLaunches.containsKey(temp.getLaunchServiceProvider()))
+                    {
+                        int temp1 = totalLaunches.get(temp.getLaunchServiceProvider());
+                        totalLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
+                    }
+                    else
+                    {
+                        totalLaunches.put(temp.getLaunchServiceProvider(),1);
+                    }
+                    break;
+                }
+                case FAILED:
+                {
+                    if(totalLaunches.containsKey(temp.getLaunchServiceProvider()))
+                    {
+                        int temp1 = totalLaunches.get(temp.getLaunchServiceProvider());
+                        totalLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
+                    }
+                    else
+                    {
+                        totalLaunches.put(temp.getLaunchServiceProvider(),1);
+                    }
+                    break;
+                }
+            }
 
+        }
+        Map<LaunchServiceProvider,Float> percentLaunches = new HashMap<>();
+        for(LaunchServiceProvider ls:successLaunches.keySet())
+        {
+            Float percent = ((float)successLaunches.get(ls)/(float)totalLaunches.get(ls)) * 100;
+            percentLaunches.put(ls,percent);
+        }
+        Map<LaunchServiceProvider, Float> sorted = percentLaunches
+                .entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(
+                        toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
+                                LinkedHashMap::new));
+        ArrayList<LaunchServiceProvider> reliablelsps = new ArrayList<>();
+        for(LaunchServiceProvider i:sorted.keySet())
+        {
+            reliablelsps.add(i);
+        }
+        /*for(int i=0;i<launchServiceProviders.size();i++)
+        {
+            logger.info(launchServiceProviders.get(i).getName());
+        }*/
+        assertEquals(k,launchServiceProviders.size());
+        assertEquals(reliablelsps.subList(0,k),launchServiceProviders);
     }
 }

@@ -75,7 +75,6 @@ public class RocketMiner {
     }
 
     /**
-     * TODO: to be implemented & tested!
      * <p>
      * Returns the top-k most reliable launch service providers as measured
      * by percentage of successful launches.
@@ -85,26 +84,63 @@ public class RocketMiner {
      */
     public List<LaunchServiceProvider> mostReliableLaunchServiceProviders(int k) {
         Collection<Launch> launch = dao.loadAll(Launch.class);
-        ArrayList<LaunchServiceProvider> lsps = new ArrayList<>();
+        Map<LaunchServiceProvider,Integer> successLaunches = new HashMap<>();
+        Map<LaunchServiceProvider,Integer> totalLaunches = new HashMap<>();
         for(int i = 0;i<launch.size();i++)
         {
-            lsps.add(Iterables.get(launch,i).getLaunchOutcome());
+            //lsps.add(Iterables.get(launch,i).get)
+            Launch temp = Iterables.get(launch,i);
+            switch(temp.getLaunchOutcome())
+            {
+                case SUCCESSFUL:
+                {
+                    if(successLaunches.containsKey(temp.getLaunchServiceProvider()))
+                    {
+                        int temp1 = successLaunches.get(temp.getLaunchServiceProvider());
+                        successLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
+                        //logger.info(temp.getLaunchServiceProvider().getName()+" success  :"+temp1);
+                    }
+                    else
+                    {
+                        successLaunches.put(temp.getLaunchServiceProvider(),1);
+                    }
+
+                    if(totalLaunches.containsKey(temp.getLaunchServiceProvider()))
+                    {
+                        int temp1 = totalLaunches.get(temp.getLaunchServiceProvider());
+                        totalLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
+                        //logger.info(temp.getLaunchServiceProvider().getName()+"  total :"+temp1);
+                    }
+                    else
+                    {
+                        totalLaunches.put(temp.getLaunchServiceProvider(),1);
+                    }
+                    break;
+                }
+                case FAILED:
+                {
+                    if(totalLaunches.containsKey(temp.getLaunchServiceProvider()))
+                    {
+                        int temp1 = totalLaunches.get(temp.getLaunchServiceProvider());
+                        totalLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
+                        //logger.info(temp.getLaunchServiceProvider().getName()+"  failed :"+temp1);
+                    }
+                    else
+                    {
+                        totalLaunches.put(temp.getLaunchServiceProvider(),1);
+                    }
+                    break;
+                }
+            }
         }
-        Map<LaunchServiceProvider,Launch.LaunchOutcome> lspstatus = new HashMap<>();
-        for(int i=0;i<lspstatus.size();i++)
+        Map<LaunchServiceProvider,Float> percentLaunches = new HashMap<>();
+        for(LaunchServiceProvider ls:successLaunches.keySet())
         {
-            if(lspstatus.containsKey("SUCCESSFUL"))
-            {
-//              Launch.LaunchOutcome count = lspstatus.get(lspstatus.get(i));
-                int count = lspstatus.get(lspstatus.get(i));
-                lspstatus.put(lspstatus.get(i),count+1);
-            }
-            else
-            {
-                lspstatus.put(lspstatus.get(i),1);
-            }
+            Float percent = ((float)successLaunches.get(ls)/(float)totalLaunches.get(ls)) * 100;
+            //logger.info(ls.getName()+"   :"+percent);
+            percentLaunches.put(ls,percent);
         }
-        Map<LaunchServiceProvider, Integer> sorted = lspstatus
+        Map<LaunchServiceProvider, Float> sorted = percentLaunches
                 .entrySet()
                 .stream()
                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
