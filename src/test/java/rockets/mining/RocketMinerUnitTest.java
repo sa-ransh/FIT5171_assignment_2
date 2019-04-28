@@ -14,6 +14,7 @@ import rockets.dataaccess.neo4j.Neo4jDAO;
 import rockets.model.Launch;
 import rockets.model.LaunchServiceProvider;
 import rockets.model.Rocket;
+import rockets.model.User;
 import scala.Array;
 
 import java.math.BigDecimal;
@@ -33,6 +34,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import static org.mockito.Mockito.*;
+
+import org.neo4j.ogm.session.Session;
+import org.neo4j.ogm.session.SessionFactory;
+import org.neo4j.harness.ServerControls;
+import org.neo4j.harness.TestServerBuilders;
+import org.neo4j.ogm.drivers.embedded.driver.EmbeddedDriver;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 public class RocketMinerUnitTest {
     Logger logger = LoggerFactory.getLogger(RocketMinerUnitTest.class);
@@ -351,5 +359,68 @@ public class RocketMinerUnitTest {
         assertEquals(k,launchServiceProviders.size());
         assertEquals(unreliablelsps.subList(0,k),launchServiceProviders);
     }
+
+
+    //INTEGRATION TESTING
+
+     public Session integrationSetUp()
+    {
+        ServerControls embeddedDatabaseServer = TestServerBuilders.newInProcessBuilder().newServer();
+        GraphDatabaseService dbService = embeddedDatabaseServer.graph();
+        EmbeddedDriver driver = new EmbeddedDriver(dbService);
+        SessionFactory sessionFactory = new SessionFactory(driver, User.class.getPackage().getName());
+        Session session = sessionFactory.openSession();
+        dao = new Neo4jDAO(session);
+        return session;
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 3, 5, 7})
+    public void mostLaunchedRocketsIntegrationTest(int k)
+    {
+        Session session = integrationSetUp();
+        dao = new Neo4jDAO(session);
+        for (Launch launch : launches) {
+            dao.createOrUpdate(launch);
+        }
+        miner = new RocketMiner(dao);
+        List<Launch> sortedLaunches = new ArrayList<>(launches);
+        sortedLaunches.sort((a, b) -> -a.getLaunchDate().compareTo(b.getLaunchDate()));
+        List<Launch> loadedLaunches = miner.mostRecentLaunches(k);
+        assertEquals(k, loadedLaunches.size());
+        assertEquals(sortedLaunches.subList(0, k), loadedLaunches);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1,2,3})
+    public void mostExpensiveLaunchesIntegrationTest(int k)
+    {
+        Session session = integrationSetUp();
+        dao = new Neo4jDAO(session);
+        for (Launch launch : launches) {
+            dao.createOrUpdate(launch);
+        }
+        miner = new RocketMiner(dao);
+        List<Launch> sortedLaunches = new ArrayList<>(launches);
+        sortedLaunches.sort((a, b) -> -a.getPrice().compareTo(b.getPrice()));
+        List<Launch> launchList = miner.mostExpensiveLaunches(k);
+        assertEquals(k,launchList.size());
+        assertEquals(sortedLaunches.subList(0,k),launchList);
+    }
+
+    @Test
+    public void dominantCountryIntegrationTest()
+    {
+        Session session = integrationSetUp();
+        dao = new Neo4jDAO(session);
+        for (Launch launch : launches) {
+            dao.createOrUpdate(launch);
+        }
+        miner = new RocketMiner(dao);
+        String realCountry = "USA";
+        String testCountry = miner.dominantCountry("LEO");
+        assertEquals(realCountry,testCountry);
+    }
+
 
 }
