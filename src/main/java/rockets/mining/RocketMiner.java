@@ -5,15 +5,9 @@ import rockets.dataaccess.DAO;
 import rockets.model.Launch;
 import rockets.model.LaunchServiceProvider;
 import rockets.model.Rocket;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -25,7 +19,6 @@ import static java.util.stream.Collectors.*;
 
 public class RocketMiner {
 
-    private static Logger logger = LoggerFactory.getLogger(RocketMiner.class);
     private DAO dao;
 
     public RocketMiner(DAO dao) {
