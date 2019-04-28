@@ -195,7 +195,6 @@ public class RocketMiner {
     }
 
     /**
-     * TODO: to be implemented & tested!
      * <p>
      * Returns a list of launch service provider that has the top-k highest
      * sales revenue in a year.
@@ -216,7 +215,7 @@ public class RocketMiner {
         LaunchServiceProvider[] lspsArray = lspsArrayList.toArray(new LaunchServiceProvider[lspsArrayList.size()]);
 
 
-        Comparator<LaunchServiceProvider> lspsRevenueComparator = (a,b) -> -a.getRevenue().compareTo(b.getRevenue());
+        Comparator<LaunchServiceProvider> lspsRevenueComparator = Comparator.comparing(LaunchServiceProvider::getRevenue).reversed();
         return lsps.stream().sorted(lspsRevenueComparator).limit(k).collect(Collectors.toList());
     }
 }
