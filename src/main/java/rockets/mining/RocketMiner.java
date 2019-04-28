@@ -6,6 +6,9 @@ import rockets.model.Launch;
 import rockets.model.LaunchServiceProvider;
 import rockets.model.Rocket;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -19,6 +22,8 @@ import static java.util.stream.Collectors.*;
 
 
 public class RocketMiner {
+
+    private static Logger logger = LoggerFactory.getLogger(RocketMiner.class);
     private DAO dao;
 
     public RocketMiner(DAO dao) {
@@ -200,6 +205,18 @@ public class RocketMiner {
      * @return the list of k launch service providers who has the highest sales revenue.
      */
     public List<LaunchServiceProvider> highestRevenueLaunchServiceProviders(int k, int year) {
-        return null;
+        logger.info("find highest revenue " + k + " LaunchServiceProvider in " + year);
+        Collection<LaunchServiceProvider> lsps = dao.loadAll(LaunchServiceProvider.class);
+        ArrayList<LaunchServiceProvider> lspsArrayList = new ArrayList<LaunchServiceProvider>();
+        for(LaunchServiceProvider lsp:lsps){
+            if(lsp.getYearFounded() == year){
+                lspsArrayList.add(lsp);
+            }
+        }
+        LaunchServiceProvider[] lspsArray = lspsArrayList.toArray(new LaunchServiceProvider[lspsArrayList.size()]);
+
+
+        Comparator<LaunchServiceProvider> lspsRevenueComparator = (a,b) -> -a.getRevenue().compareTo(b.getRevenue());
+        return lsps.stream().sorted(lspsRevenueComparator).limit(k).collect(Collectors.toList());
     }
 }
