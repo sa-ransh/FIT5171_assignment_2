@@ -84,6 +84,13 @@ public class Neo4jDAO implements DAO {
 
     // TODO: need to be tested!
     public <T extends Entity> void delete(T entity) {
-        session.delete(entity);
+        //Attempt to find the entity, if it does not exist, throw exception
+        Class clazz = entity.getClass();
+        if (this.findExistingEntity(entity, clazz) == null){
+            throw new IllegalArgumentException("Entity does not exist in the Database");
+        } else {
+            session.delete(entity);
+        }
+
     }
 }

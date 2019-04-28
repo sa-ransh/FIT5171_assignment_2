@@ -2,6 +2,7 @@ package rockets.mining;
 
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -28,6 +29,8 @@ import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import static org.mockito.Mockito.*;
 
 public class RocketMinerUnitTest {
@@ -265,4 +268,16 @@ public class RocketMinerUnitTest {
         assertEquals(sortedLsps.subList(0, k), loadedLaunchServiceProviders);
     }
 
+/*   @Test
+    public void shouldThrowExceptionWhenGivenInvalidKRockets() {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> miner.mostLaunchedRockets(4));
+        assertEquals("value exceeds total number of rockets", exception.getMessage());
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenGivenInvalidKServiceProviders() {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> miner.mostReliableLaunchServiceProviders(3));
+        assertEquals("value exceeds total number of launch service providers", exception.getMessage());
+    }
+*/
 }
