@@ -85,7 +85,7 @@ public class RocketUnitTest {
 
     @DisplayName("should return true when two rockets have the same details")
     @Test
-    public void shouldReturnTrueWhenUsersHaveSameDetails() {
+    public void shouldReturnTrueWhenRocketsHaveSameDetails() {
         String name = "BFR";
         String country = "USA";
         LaunchServiceProvider manufacturer = new LaunchServiceProvider("SpaceX", 2002, "USA");
@@ -99,7 +99,7 @@ public class RocketUnitTest {
 
     @DisplayName("should return false when two rockets have the different details")
     @Test
-    public void shouldReturnTrueWhenUsersHaveDifferentDetails() {
+    public void shouldReturnTrueWhenRocketsHaveDifferentDetails() {
         String name = "BFR";
         String country = "USA";
         LaunchServiceProvider manufacturer = new LaunchServiceProvider("SpaceX", 2002, "USA");
@@ -109,6 +109,33 @@ public class RocketUnitTest {
         LaunchServiceProvider manufacturer2 = new LaunchServiceProvider("SpaceY", 2002, "USA");
         Rocket anotherRocket = new Rocket(name2, country2, manufacturer2);
         assertFalse(bfr.equals(anotherRocket));
+    }
+
+    @DisplayName("should throw exception when given null name to constructor")
+    @Test
+    public void shouldThrowExceptionWhenNoNameGiven() {
+        String country = "USA";
+        LaunchServiceProvider lsp = new LaunchServiceProvider("test",2018,"USA");
+        assertThrows(NullPointerException.class, () -> new Rocket(null, country, lsp));
+    }
+
+    @DisplayName("should throw exception when given null country to constructor")
+    @Test
+    public void shouldThrowExceptionWhenNoCountryGiven() {
+        String name = "BFR";
+        LaunchServiceProvider lsp = new LaunchServiceProvider("test",2018,"USA");
+        assertThrows(NullPointerException.class, () -> new Rocket(name, null, lsp));
+    }
+
+    @DisplayName("should throw exception when given null country to constructor")
+    @Test
+    public void shouldBeTrueWhenRocketPointsToValidLSP() {
+        String name = "BFR";
+        String country ="USA";
+        LaunchServiceProvider lsp = new LaunchServiceProvider("test",2018,"USA");
+        Rocket target = new Rocket(name,country,lsp);
+        assertEquals(lsp,target.getManufacturer());
+        assertEquals(LaunchServiceProvider.class,target.getManufacturer().getClass());
     }
 
 }

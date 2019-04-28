@@ -122,4 +122,11 @@ public class UserUnitTest {
         target.setLastName(lastName);
         assertFalse(lastName.equals(target.getLastName()));
     }
+
+    @DisplayName("should throw exception when pass null to setLastName function")
+    @Test
+    public void shouldThrowExceptionWhenSetLastNameToNull() {
+        NullPointerException exception = assertThrows(NullPointerException.class, () -> target.setLastName(null));
+        assertEquals("lastName cannot be null or empty", exception.getMessage());
+    }
 }
