@@ -268,6 +268,67 @@ public class RocketMinerUnitTest {
         assertEquals(sortedLsps.subList(0, k), loadedLaunchServiceProviders);
     }
 
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 3})
+    public void shouldReturnMostUnreliableLaunchServiceProviders(int k){
+        when(dao.loadAll(Launch.class)).thenReturn(launches);
+        List<Launch> sortedLaunches = new ArrayList<>(launches);
+        List<LaunchServiceProvider> launchServiceProviders = miner.mostUnreliableLaunchServiceProviders(k);
+        Map<LaunchServiceProvider,Integer> failedLaunches= new HashMap<>();
+        Map<LaunchServiceProvider,Integer> totalLaunches= new HashMap<>();
+        for(int i=0;i<sortedLaunches.size();i++)
+        {
+            Launch temp = sortedLaunches.get(i);
+            if(temp.getLaunchOutcome() == Launch.LaunchOutcome.FAILED)
+            {
+                if(failedLaunches.containsKey(temp.getLaunchServiceProvider()))
+                {
+                    int temp1 = failedLaunches.get(temp.getLaunchServiceProvider());
+                    failedLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
+                }
+                else
+                {
+                    failedLaunches.put(temp.getLaunchServiceProvider(),1);
+                }
+
+            }
+            if(totalLaunches.containsKey(temp.getLaunchServiceProvider()))
+            {
+                int temp1 = totalLaunches.get(temp.getLaunchServiceProvider());
+                totalLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
+            }
+            else
+            {
+                totalLaunches.put(temp.getLaunchServiceProvider(),1);
+            }
+
+        }
+        Map<LaunchServiceProvider,Float> percentLaunches = new HashMap<>();
+        for(LaunchServiceProvider ls:failedLaunches.keySet())
+        {
+            Float percent = ((float)failedLaunches.get(ls)/(float)totalLaunches.get(ls)) * 100;
+            percentLaunches.put(ls,percent);
+        }
+        Map<LaunchServiceProvider, Float> sorted = percentLaunches
+                .entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(
+                        toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
+                                LinkedHashMap::new));
+        ArrayList<LaunchServiceProvider> unreliablelsps = new ArrayList<>();
+        for(LaunchServiceProvider i:sorted.keySet())
+        {
+            unreliablelsps.add(i);
+        }
+        /*for(int i=0;i<launchServiceProviders.size();i++)
+        {
+            logger.info(launchServiceProviders.get(i).getName());
+        }*/
+        assertEquals(k,launchServiceProviders.size());
+        assertEquals(unreliablelsps.subList(0,k),launchServiceProviders);
+    }
+
 /*   @Test
     public void shouldThrowExceptionWhenGivenInvalidKRockets() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> miner.mostLaunchedRockets(4));
@@ -280,4 +341,5 @@ public class RocketMinerUnitTest {
         assertEquals("value exceeds total number of launch service providers", exception.getMessage());
     }
 */
+
 }
