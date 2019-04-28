@@ -9,6 +9,8 @@ import rockets.model.Rocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -204,19 +206,40 @@ public class RocketMiner {
      * @return the list of k launch service providers who has the highest sales revenue.
      */
     public List<LaunchServiceProvider> highestRevenueLaunchServiceProviders(int k, int year) {
-        logger.info("find highest revenue " + k + " LaunchServiceProvider in " + year);
-        Collection<LaunchServiceProvider> lsps = dao.loadAll(LaunchServiceProvider.class);
-        ArrayList<LaunchServiceProvider> lspsArrayList = new ArrayList<LaunchServiceProvider>();
-        for(LaunchServiceProvider lsp:lsps){
-            if(lsp.getYearFounded() == year){
-                lspsArrayList.add(lsp);
+        Collection<Launch> launch = dao.loadAll(Launch.class);
+        Map<LaunchServiceProvider, BigDecimal> revenueLsp= new HashMap<>();
+        for(int i = 0;i<launch.size();i++) {
+            Launch temp = Iterables.get(launch, i);
+            int tempDate = temp.getLaunchDate().getYear();
+            if(tempDate == year)
+            {
+                if(revenueLsp.containsKey(temp.getLaunchServiceProvider()))
+                {
+                    BigDecimal temp1 = (revenueLsp.get(temp.getLaunchServiceProvider())).add(temp.getPrice());
+                    revenueLsp.put(temp.getLaunchServiceProvider(),temp1);
+                }
+                else
+                {
+                    revenueLsp.put(temp.getLaunchServiceProvider(),temp.getPrice());
+                }
             }
+
         }
-        LaunchServiceProvider[] lspsArray = lspsArrayList.toArray(new LaunchServiceProvider[lspsArrayList.size()]);
 
+        Map<LaunchServiceProvider, BigDecimal> sorted = revenueLsp
+                .entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(
+                        toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
+                                LinkedHashMap::new));
+        ArrayList<LaunchServiceProvider> returnval = new ArrayList<>();
 
-        Comparator<LaunchServiceProvider> lspsRevenueComparator = Comparator.comparing(LaunchServiceProvider::getRevenue).reversed();
-        return lsps.stream().sorted(lspsRevenueComparator).limit(k).collect(Collectors.toList());
+        for(LaunchServiceProvider i:sorted.keySet())
+        {
+            returnval.add(i);
+        }
+        return returnval.subList(0,k);
     }
 
     /**

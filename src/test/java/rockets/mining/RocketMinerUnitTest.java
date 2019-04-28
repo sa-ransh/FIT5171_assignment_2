@@ -17,6 +17,7 @@ import rockets.model.Rocket;
 import scala.Array;
 
 import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -77,8 +78,11 @@ public class RocketMinerUnitTest {
         // month of each launch
         int[] months = new int[]{1, 6, 4, 3, 4, 11, 6, 5, 12, 5, 6, 10, 4};
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         // year of each launch service provider
-        int[] years = new int[]{1, 6, 4, 3, 4, 11, 6, 5, 12, 5};
+        LocalDate[] years = new LocalDate[]{LocalDate.parse("2019-01-29",formatter),LocalDate.parse("2017-01-29",formatter),LocalDate.parse("2017-01-29",formatter),LocalDate.parse("2016-01-29",formatter),LocalDate.parse("2016-01-29",formatter),LocalDate.parse("2017-01-29",formatter),
+                LocalDate.parse("2018-01-29",formatter),LocalDate.parse("2017-01-29",formatter),LocalDate.parse("2017-01-29",formatter),LocalDate.parse("2015-01-29",formatter),LocalDate.parse("2016-01-29",formatter),LocalDate.parse("2016-01-29",formatter),
+                LocalDate.parse("2018-01-29",formatter)};
 
         // index of rocket of each launch
         int[] rocketIndex = new int[]{0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 5, 5, 5};
@@ -95,16 +99,9 @@ public class RocketMinerUnitTest {
             l.setLaunchSite("VAFB");
             l.setOrbit("LEO");
             l.setPrice(price[i]);
+            l.setLaunchDate(years[i]);
             spy(l);
             return l;
-        }).collect(Collectors.toList());
-
-        lsps = IntStream.range(0, 10).mapToObj(i -> {
-            logger.info("create " + i + " launch service provider in year: " + years[i]);
-            LaunchServiceProvider lsp = new LaunchServiceProvider("ULA", 1990, "USA");
-            lsp.setRevenue("20");
-            spy(lsp);
-            return lsp;
         }).collect(Collectors.toList());
     }
 
@@ -249,23 +246,53 @@ public class RocketMinerUnitTest {
         {
             reliablelsps.add(i);
         }
-        /*for(int i=0;i<launchServiceProviders.size();i++)
-        {
-            logger.info(launchServiceProviders.get(i).getName());
-        }*/
         assertEquals(k,launchServiceProviders.size());
         assertEquals(reliablelsps.subList(0,k),launchServiceProviders);
     }
 
     @ParameterizedTest
-    @CsvSource({"1,2002", "2,2002","3,2002"})
+    @CsvSource({"1,2019", "2,2018","3,2017"})
     public void shouldReturnHighestRevenueLaunchServiceProviders(int k, int year) {
-        when(dao.loadAll(LaunchServiceProvider.class)).thenReturn(lsps);
-        List<LaunchServiceProvider> sortedLsps = new ArrayList<>(lsps);
-        sortedLsps.sort((a, b) -> -a.getRevenue().compareTo(b.getRevenue()));
-        List<LaunchServiceProvider> loadedLaunchServiceProviders = miner.highestRevenueLaunchServiceProviders(k, year);
-        assertEquals(k, loadedLaunchServiceProviders.size());
-        assertEquals(sortedLsps.subList(0, k), loadedLaunchServiceProviders);
+        when(dao.loadAll(Launch.class)).thenReturn(launches);
+        List<Launch> sortedLaunches = new ArrayList<>(launches);
+        List<LaunchServiceProvider> launchServiceProviders = miner.highestRevenueLaunchServiceProviders(k,year);
+        Map<LaunchServiceProvider, BigDecimal> revenueLsp= new HashMap<>();
+        for(int i = 0;i<sortedLaunches.size();i++) {
+            Launch temp = sortedLaunches.get(i);
+            int tempDate = temp.getLaunchDate().getYear();
+            if(tempDate == year)
+            {
+                if(revenueLsp.containsKey(temp.getLaunchServiceProvider()))
+                {
+                    BigDecimal temp1 = (revenueLsp.get(temp.getLaunchServiceProvider())).add(temp.getPrice());
+                    revenueLsp.put(temp.getLaunchServiceProvider(),temp1);
+                }
+                else
+                {
+                    revenueLsp.put(temp.getLaunchServiceProvider(),temp.getPrice());
+                }
+            }
+
+        }
+
+        Map<LaunchServiceProvider, BigDecimal> sorted = revenueLsp
+                .entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(
+                        toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
+                                LinkedHashMap::new));
+        ArrayList<LaunchServiceProvider> highestRevenueLsp = new ArrayList<>();
+
+        for(LaunchServiceProvider i:sorted.keySet())
+        {
+            highestRevenueLsp.add(i);
+        }
+        for(int i=0;i<launchServiceProviders.size();i++) {
+            logger.info(launchServiceProviders.get(i).getName() + " " + sorted.get(launchServiceProviders.get(i)));
+        }
+        assertEquals(k,launchServiceProviders.size());
+        assertEquals(highestRevenueLsp.subList(0,k),launchServiceProviders);
     }
 
     @ParameterizedTest
@@ -321,25 +348,8 @@ public class RocketMinerUnitTest {
         {
             unreliablelsps.add(i);
         }
-        /*for(int i=0;i<launchServiceProviders.size();i++)
-        {
-            logger.info(launchServiceProviders.get(i).getName());
-        }*/
         assertEquals(k,launchServiceProviders.size());
         assertEquals(unreliablelsps.subList(0,k),launchServiceProviders);
     }
-
-/*   @Test
-    public void shouldThrowExceptionWhenGivenInvalidKRockets() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> miner.mostLaunchedRockets(4));
-        assertEquals("value exceeds total number of rockets", exception.getMessage());
-    }
-
-    @Test
-    public void shouldThrowExceptionWhenGivenInvalidKServiceProviders() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> miner.mostReliableLaunchServiceProviders(3));
-        assertEquals("value exceeds total number of launch service providers", exception.getMessage());
-    }
-*/
 
 }

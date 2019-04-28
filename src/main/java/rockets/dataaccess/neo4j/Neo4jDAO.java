@@ -82,7 +82,6 @@ public class Neo4jDAO implements DAO {
         return session.loadAll(clazz);
     }
 
-    // TODO: need to be tested!
     public <T extends Entity> void delete(T entity) {
         //Attempt to find the entity, if it does not exist, throw exception
         Class clazz = entity.getClass();
