@@ -17,6 +17,8 @@ public class LaunchServiceProvider extends Entity {
 
     private String headquarters;
 
+    private String revenue;
+
     private Set<Rocket> rockets;
 
     public LaunchServiceProvider(String name, int yearFounded, String country) {
@@ -79,4 +81,15 @@ public class LaunchServiceProvider extends Entity {
 
         return Objects.hash(name, yearFounded, country);
     }
+
+    public String getRevenue() {
+        return revenue;
+    }
+
+    public void setRevenue(String revenue) {
+        notNull(revenue, "Revenue cannot be null or empty");
+        this.revenue = revenue;
+    }
+
+
 }

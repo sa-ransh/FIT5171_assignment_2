@@ -64,4 +64,11 @@ public class LaunchServiceProviderUnitTest {
     public void shouldReturnTrueWhenYearFoundedIsLessThanCurrentYear() {
         assertTrue(target.checkValidYear(yearFounded));
     }
+
+    @DisplayName("should throw exception when pass null to revenue function")
+    @Test
+    public void shouldThrowExceptionWhenSetRevenueToNull() {
+        NullPointerException exception = assertThrows(NullPointerException.class, () -> target.setRevenue(null));
+        assertEquals("Revenue cannot be null or empty", exception.getMessage());
+    }
 }

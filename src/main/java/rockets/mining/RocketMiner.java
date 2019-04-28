@@ -6,6 +6,9 @@ import rockets.model.Launch;
 import rockets.model.LaunchServiceProvider;
 import rockets.model.Rocket;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -19,6 +22,8 @@ import static java.util.stream.Collectors.*;
 
 
 public class RocketMiner {
+
+    private static Logger logger = LoggerFactory.getLogger(RocketMiner.class);
     private DAO dao;
 
     public RocketMiner(DAO dao) {
@@ -190,7 +195,6 @@ public class RocketMiner {
     }
 
     /**
-     * TODO: to be implemented & tested!
      * <p>
      * Returns a list of launch service provider that has the top-k highest
      * sales revenue in a year.
@@ -200,6 +204,78 @@ public class RocketMiner {
      * @return the list of k launch service providers who has the highest sales revenue.
      */
     public List<LaunchServiceProvider> highestRevenueLaunchServiceProviders(int k, int year) {
-        return null;
+        logger.info("find highest revenue " + k + " LaunchServiceProvider in " + year);
+        Collection<LaunchServiceProvider> lsps = dao.loadAll(LaunchServiceProvider.class);
+        ArrayList<LaunchServiceProvider> lspsArrayList = new ArrayList<LaunchServiceProvider>();
+        for(LaunchServiceProvider lsp:lsps){
+            if(lsp.getYearFounded() == year){
+                lspsArrayList.add(lsp);
+            }
+        }
+        LaunchServiceProvider[] lspsArray = lspsArrayList.toArray(new LaunchServiceProvider[lspsArrayList.size()]);
+
+
+        Comparator<LaunchServiceProvider> lspsRevenueComparator = Comparator.comparing(LaunchServiceProvider::getRevenue).reversed();
+        return lsps.stream().sorted(lspsRevenueComparator).limit(k).collect(Collectors.toList());
+    }
+
+    /**
+     * <p>
+     * Returns the top-k most unreliable launch service providers as measured
+     * by percentage of unsuccessful launches.
+     *
+     * @param k the number of launch service providers to be returned.
+     * @return the list of k most unreliable ones.
+     */
+    public List<LaunchServiceProvider> mostUnreliableLaunchServiceProviders(int k) {
+        Collection<Launch> launch = dao.loadAll(Launch.class);
+        Map<LaunchServiceProvider,Integer> failedLaunches = new HashMap<>();
+        Map<LaunchServiceProvider,Integer> totalLaunches = new HashMap<>();
+        for(int i = 0;i<launch.size();i++)
+        {
+            Launch temp = Iterables.get(launch,i);
+            if(temp.getLaunchOutcome() == Launch.LaunchOutcome.FAILED)
+            {
+                if(failedLaunches.containsKey(temp.getLaunchServiceProvider()))
+                {
+                    int temp1 = failedLaunches.get(temp.getLaunchServiceProvider());
+                    failedLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
+                }
+                else
+                {
+                    failedLaunches.put(temp.getLaunchServiceProvider(),1);
+                }
+
+            }
+            if(totalLaunches.containsKey(temp.getLaunchServiceProvider()))
+            {
+                int temp1 = totalLaunches.get(temp.getLaunchServiceProvider());
+                totalLaunches.put(temp.getLaunchServiceProvider(),temp1+1);
+            }
+            else
+            {
+                totalLaunches.put(temp.getLaunchServiceProvider(),1);
+            }
+        }
+        Map<LaunchServiceProvider,Float> percentLaunches = new HashMap<>();
+        for(LaunchServiceProvider ls:failedLaunches.keySet())
+        {
+            Float percent = ((float)failedLaunches.get(ls)/(float)totalLaunches.get(ls)) * 100;
+            percentLaunches.put(ls,percent);
+        }
+        Map<LaunchServiceProvider, Float> sorted = percentLaunches
+                .entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(
+                        toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
+                                LinkedHashMap::new));
+        ArrayList<LaunchServiceProvider> returnval = new ArrayList<>();
+
+        for(LaunchServiceProvider i:sorted.keySet())
+        {
+            returnval.add(i);
+        }
+        return returnval.subList(0,k);
     }
 }

@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class Neo4jDAOUnitTest {
     private DAO dao;
@@ -153,6 +153,17 @@ public class Neo4jDAOUnitTest {
         assertEquals(1, launches.size());
         loadedLaunch = launches.iterator().next();
         assertEquals("experimental", loadedLaunch.getFunction());
+    }
+    @Test
+    public void shouldDeleteObjectFromDAO(){
+        dao.createOrUpdate(rocket);
+        dao.delete(rocket);
+        assertTrue(dao.loadAll(Rocket.class).isEmpty());
+    }
+
+    @Test
+    public void shouldThrowExceptionIfDeleteInvalid(){
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, ()-> dao.delete(rocket));
     }
 
     @Test
