@@ -30,9 +30,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toMap;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.neo4j.ogm.session.Session;
@@ -422,5 +421,19 @@ public class RocketMinerUnitTest {
         assertEquals(realCountry,testCountry);
     }
 
+    /////
+
+    /*Most Reliable LSP and Unreliable LSP cannot be equal since there are more than one lsps with varying data
+    * */
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 3})
+    public void IntegrationTestsLsp(int k){
+        when(dao.loadAll(Launch.class)).thenReturn(launches);
+        List<Launch> sortedLaunches = new ArrayList<>(launches);
+        List<LaunchServiceProvider> reliable = miner.mostReliableLaunchServiceProviders(k);
+        List<LaunchServiceProvider> unreliable = miner.mostUnreliableLaunchServiceProviders(k);
+        assertFalse(reliable.get(0).getName().equals(unreliable.get(0).getName()));
+    }
+    
 
 }
